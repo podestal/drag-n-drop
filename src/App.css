@@ -1,0 +1,11 @@
+.page {
+  width: 250px;
+  height: 250px;
+  background-color: bisque;
+}
+
+.widgets {
+  display: flex;
+  justify-content: space-around;
+}
+
