@@ -5,16 +5,16 @@ const App = () => {
 
   // filter by status
   const [data, setData] = useState([
-    {title: "widget A", status: "n"},
-    {title: "widget B", status: "n"},
-    {title: "widget C", status: "p"},
-    {title: "widget D", status: "p"},
-    {title: "widget F", status: "p"},
-    {title: "widget G", status: "p"},
-    {title: "widget H", status: "r"},
-    {title: "widget I", status: "r"},
-    {title: "widget J", status: "r"},
-    {title: "widget K", status: "c"},
+    {id: "1", title: "widget A", status: "n"},
+    {id: "2", title: "widget B", status: "n"},
+    {id: "3", title: "widget C", status: "p"},
+    {id: "4", title: "widget D", status: "p"},
+    {id: "5", title: "widget F", status: "p"},
+    {id: "6", title: "widget G", status: "p"},
+    {id: "7", title: "widget H", status: "r"},
+    {id: "8", title: "widget I", status: "r"},
+    {id: "9", title: "widget J", status: "r"},
+    {id: "10", title: "widget K", status: "c"},
   ])
 
   const [notStarted, setNotStarted] = useState(data.filter(widget => widget.status == "n"))
@@ -22,7 +22,7 @@ const App = () => {
   const [revision, setRevision] = useState(data.filter(widget => widget.status == "r"))
   const [completed, setCompleted] = useState(data.filter(widget => widget.status == "c"))
 
-
+  // NOT STARTED   //////////////
 
   const handleOnDragNotStarted = (e, widgetType) => {
     e.dataTransfer.setData("widgetType", JSON.stringify(widgetType))
@@ -33,18 +33,18 @@ const App = () => {
     if (widgetType.status == "p") {
       setInProgress(prev => prev.filter(widget => widget.title !== widgetType.title))
     }
+    if (widgetType.status == "r") {
+      setRevision(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
     if (widgetType.status != "n") {
+      widgetType.status = "n"
       setNotStarted([...notStarted, widgetType])
     }
   }
 
-  const handleDragOverNotStarted = e => {
-    e.preventDefault()
-  }
-
+  // IN PROGRESS /////////////
 
   const handleOnDragInProgress = (e, widgetType) => {
-    console.log("onDrag", widgetType);
     e.dataTransfer.setData("widgetType", JSON.stringify(widgetType))
   }
 
@@ -53,12 +53,63 @@ const App = () => {
     if (widgetType.status == "n") {
       setNotStarted(prev => prev.filter(widget => widget.title !== widgetType.title))
     }
+    if (widgetType.status == "r") {
+      setRevision(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
     if (widgetType.status != "p") {
+      widgetType.status = "p"
       setInProgress([...inProgress, widgetType])
     }
   }
 
-  const handleDragOverInProgress = e => {
+  // IN REVISION //////////////
+
+  const handleOnDragInRevision = (e, widgetType) => {
+    console.log("onDrag", widgetType);
+    e.dataTransfer.setData("widgetType", JSON.stringify(widgetType))
+  }
+
+  const handleOnDropInRevision = e => {
+    const widgetType = JSON.parse(e.dataTransfer.getData("widgetType"))
+    if (widgetType.status == "n") {
+      setNotStarted(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status == "p") {
+      setInProgress(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status == "c") {
+      setCompleted(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status != "r") {
+      widgetType.status = "r"
+      setRevision([...revision, widgetType])
+    }
+  }
+
+  // COMPLETED
+
+  const handleOnDragCompleted = (e, widgetType) => {
+    e.dataTransfer.setData("widgetType", JSON.stringify(widgetType))
+  }
+
+  const handleOnDropCompleted = e => {
+    const widgetType = JSON.parse(e.dataTransfer.getData("widgetType"))
+    if (widgetType.status == "n") {
+      setNotStarted(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status == "p") {
+      setInProgress(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status == "r") {
+      setRevision(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status != "c") {
+      widgetType.status = "c"
+      setCompleted([...completed, widgetType])
+    }
+  }
+
+  const handleDragOver = e => {
     e.preventDefault()
   }
   
@@ -73,13 +124,13 @@ const App = () => {
               draggable
               onDragStart={e => handleOnDragNotStarted(e, widget)}
               onDrop={handleOnDropNotStarted}
-              onDragOver={handleDragOverNotStarted}
+              onDragOver={handleDragOver}
             >
               {widget.title}
             </div>
           ))}
         </div>
-        <div className='not-started'>
+        <div className='in-progress'>
           <h1>In Progress</h1>
           {inProgress.map(widget => (
             <div 
@@ -88,31 +139,35 @@ const App = () => {
               onDragStart={e => handleOnDragInProgress(e, widget)}
               // onDragStart={e => handleOnDrag(e, widget)}
               onDrop={handleOnDropInprogress} 
-              onDragOver={handleDragOverInProgress}
+              onDragOver={handleDragOver}
             >
               {widget.title}
             </div>
           ))}
         </div>
-        <div className='not-started'>
+        <div className='in-revision'>
           <h1>In Revision</h1>
           {revision.map(widget => (
             <div 
               className='not-started'
               draggable
-              onDragStart={e => handleOnDrag(e, widget.title)}
+              onDragStart={e => handleOnDragInRevision(e, widget)}
+              onDrop={handleOnDropInRevision}
+              onDragOver={handleDragOver}
             >
               {widget.title}
             </div>
           ))}
         </div>
-        <div className='not-started'>
+        <div className='completed'>
           <h1>Completed</h1>
           {completed.map(widget => (
             <div 
               className='not-started'
               draggable
-              onDragStart={e => handleOnDrag(e, widget.title)}
+              onDragStart={e => handleOnDragCompleted(e, widget)}
+              onDrop={handleOnDropCompleted}
+              onDragOver={handleDragOver}
             >
               {widget.title}
             </div>
