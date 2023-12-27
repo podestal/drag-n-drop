@@ -16,7 +16,7 @@ const App = () => {
     {title: "widget J", status: "r"},
     {title: "widget K", status: "c"},
   ])
-  const [widgets, setWitgets] = useState(data)
+
   const [notStarted, setNotStarted] = useState(data.filter(widget => widget.status == "n"))
   const [inProgress, setInProgress] = useState(data.filter(widget => widget.status == "p"))
   const [revision, setRevision] = useState(data.filter(widget => widget.status == "r"))
@@ -24,32 +24,56 @@ const App = () => {
 
 
 
-  const handleOnDrag = (e, widgetType) => {
-    console.log(widgetType);
-    e.dataTransfer.setData("widgetType", widgetType)
-    console.log("widgets", widgets);
+  const handleOnDragNotStarted = (e, widgetType) => {
+    e.dataTransfer.setData("widgetType", JSON.stringify(widgetType))
   }
 
-  const handleOnDrop = e => {
-    const widgetType = e.dataTransfer.getData("widgetType")
-    console.log(widgetType)
-    setWitgets([...widgets, widgetType])
+  const handleOnDropNotStarted = e => {
+    const widgetType = JSON.parse(e.dataTransfer.getData("widgetType"))
+    if (widgetType.status == "p") {
+      setInProgress(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status != "n") {
+      setNotStarted([...notStarted, widgetType])
+    }
   }
 
-  const handleDragOver = e => {
+  const handleDragOverNotStarted = e => {
+    e.preventDefault()
+  }
+
+
+  const handleOnDragInProgress = (e, widgetType) => {
+    console.log("onDrag", widgetType);
+    e.dataTransfer.setData("widgetType", JSON.stringify(widgetType))
+  }
+
+  const handleOnDropInprogress = e => {
+    const widgetType = JSON.parse(e.dataTransfer.getData("widgetType"))
+    if (widgetType.status == "n") {
+      setNotStarted(prev => prev.filter(widget => widget.title !== widgetType.title))
+    }
+    if (widgetType.status != "p") {
+      setInProgress([...inProgress, widgetType])
+    }
+  }
+
+  const handleDragOverInProgress = e => {
     e.preventDefault()
   }
   
   return (
     <>
-      <div className='widgets'>
+      {/* <div className='widgets'> */}
         <div className='not-started'>
           <h1>Not started</h1>
           {notStarted.map(widget => (
             <div 
               className='not-started'
               draggable
-              onDragStart={e => handleOnDrag(e, widget.title)}
+              onDragStart={e => handleOnDragNotStarted(e, widget)}
+              onDrop={handleOnDropNotStarted}
+              onDragOver={handleDragOverNotStarted}
             >
               {widget.title}
             </div>
@@ -61,7 +85,10 @@ const App = () => {
             <div 
               className='not-started'
               draggable
-              onDragStart={e => handleOnDrag(e, widget.title)}
+              onDragStart={e => handleOnDragInProgress(e, widget)}
+              // onDragStart={e => handleOnDrag(e, widget)}
+              onDrop={handleOnDropInprogress} 
+              onDragOver={handleDragOverInProgress}
             >
               {widget.title}
             </div>
@@ -113,7 +140,7 @@ const App = () => {
         >
           Widget C
         </div> */}
-      </div>
+      {/* </div> */}
       {/* <div className='page' onDrop={handleOnDrop} onDragOver={handleDragOver}>
         {widgets.map((widget, idx) => (
           <div className='dropped-widget' key={idx}>
@@ -121,6 +148,20 @@ const App = () => {
           </div>
         ))}
       </div> */}
+        {/* <div className='not-started'>
+          <h1>In Progress</h1>
+          {inProgress.map(widget => (
+            <div 
+              className='not-started'
+              // draggable
+              // onDragStart={e => handleOnDrag(e, widget.title)}
+              onDrop={handleOnDrop} 
+              onDragOver={handleDragOver}
+            >
+              {widget.title}
+            </div>
+          ))}
+        </div> */}
     </>
   )
 }
